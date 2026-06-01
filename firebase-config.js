@@ -1,3 +1,4 @@
+// Firebase web app config — must use window.FIREBASE_CONFIG (required by index.html)
 window.FIREBASE_CONFIG = {
   apiKey: 'AIzaSyAeXHtGfYiCr-eufa4d-GNghmxf2TfYFNY',
   authDomain: 'thinkdigitally-helpdesk-8c050.firebaseapp.com',

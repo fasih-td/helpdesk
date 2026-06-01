@@ -1117,7 +1117,7 @@ hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+<script src="./firebase-config.js"></script>
 <script>
 /* ════════════════════════════════════
    CONFIG
@@ -1165,9 +1165,22 @@ const DEFAULT_DEPTS = ['Engineering','Marketing','Sales','HR','Finance','Operati
 const normEmail = e => (e || '').trim().toLowerCase();
 const RESEND_COOLDOWN_MS = 60 * 1000;
 
+function getFirebaseConfig() {
+  return window.FIREBASE_CONFIG || null;
+}
+
 function firebaseConfigValid() {
-  const c = window.FIREBASE_CONFIG;
-  return c && c.apiKey && c.apiKey !== 'YOUR_API_KEY' && c.projectId && c.projectId !== 'YOUR_PROJECT_ID';
+  const c = getFirebaseConfig();
+  return !!(c && c.apiKey && c.projectId
+    && c.apiKey !== 'YOUR_API_KEY'
+    && c.projectId !== 'YOUR_PROJECT_ID');
+}
+
+function firebaseConfigErrorMessage() {
+  if (!window.FIREBASE_CONFIG) {
+    return 'firebase-config.js did not load. Upload it to GitHub next to index.html, or fix: use window.FIREBASE_CONFIG = { ... }';
+  }
+  return 'firebase-config.js still has placeholder keys. Paste your real Firebase config from Firebase Console → Project settings → Your apps.';
 }
 
 function hideAppLoading() {
@@ -1193,7 +1206,31 @@ function profileToUser(uid, data, email) {
   };
 }
 
-async function ensureSettingsDoc() {
+let unsubProfiles = null;
+let unsubTickets = null;
+let unsubSettings = null;
+
+function applySettingsData(d) {
+  if (d?.accessories?.length) cache.accessories = d.accessories;
+  if (d?.departments?.length) cache.departments = d.departments;
+  populateDeptSelect();
+  if (currentUser) buildAccGrid();
+}
+
+async function loadSettings() {
+  cache.accessories = [...DEFAULT_ACC];
+  cache.departments = [...DEFAULT_DEPTS];
+  populateDeptSelect();
+  try {
+    const snap = await db.collection('settings').doc('app').get();
+    if (snap.exists) applySettingsData(snap.data());
+  } catch (err) {
+    console.warn('Could not load settings (using defaults):', err);
+  }
+}
+
+async function seedSettingsIfAdmin() {
+  if (!currentUser || currentUser.role !== 'admin') return;
   const ref = db.collection('settings').doc('app');
   const snap = await ref.get();
   if (!snap.exists) {
@@ -1201,12 +1238,26 @@ async function ensureSettingsDoc() {
   }
 }
 
-function bindFirestoreListeners() {
-  db.collection('profiles').onSnapshot(snap => {
+function bindSettingsListener() {
+  if (unsubSettings) unsubSettings();
+  unsubSettings = db.collection('settings').doc('app').onSnapshot(snap => {
+    if (snap.exists) applySettingsData(snap.data());
+    else {
+      cache.accessories = [...DEFAULT_ACC];
+      cache.departments = [...DEFAULT_DEPTS];
+      populateDeptSelect();
+    }
+  }, err => console.warn('settings listener', err));
+}
+
+function startAppDataListeners() {
+  if (!db || !auth.currentUser) return;
+  stopAppDataListeners();
+
+  unsubProfiles = db.collection('profiles').onSnapshot(snap => {
     cache.users = snap.docs
       .map(d => profileToUser(d.id, d.data()))
       .filter(u => !u.disabled);
-    populateDeptSelect();
     if (currentUser) {
       const fresh = cache.users.find(u => u.id === currentUser.id);
       if (fresh) currentUser = fresh;
@@ -1215,26 +1266,20 @@ function bindFirestoreListeners() {
     }
   }, err => console.error('profiles listener', err));
 
-  db.collection('tickets').onSnapshot(snap => {
+  unsubTickets = db.collection('tickets').onSnapshot(snap => {
     cache.tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     if (currentUser) {
       updateBadges();
       refreshActiveView();
     }
   }, err => console.error('tickets listener', err));
+}
 
-  db.collection('settings').doc('app').onSnapshot(snap => {
-    if (snap.exists) {
-      const d = snap.data();
-      if (d.accessories?.length) cache.accessories = d.accessories;
-      if (d.departments?.length) cache.departments = d.departments;
-    } else {
-      cache.accessories = [...DEFAULT_ACC];
-      cache.departments = [...DEFAULT_DEPTS];
-    }
-    populateDeptSelect();
-    if (currentUser) buildAccGrid();
-  }, err => console.error('settings listener', err));
+function stopAppDataListeners() {
+  if (unsubProfiles) { unsubProfiles(); unsubProfiles = null; }
+  if (unsubTickets) { unsubTickets(); unsubTickets = null; }
+  cache.users = [];
+  cache.tickets = [];
 }
 
 function refreshActiveView() {
@@ -1250,28 +1295,48 @@ function refreshActiveView() {
 }
 
 async function initFirebase() {
-  if (!firebaseConfigValid()) {
-    showAppLoadingError('Edit firebase-config.js with your Firebase web app keys (see README).');
+  if (location.protocol === 'file:') {
+    showAppLoadingError(
+      'Do not double-click index.html. Firebase needs a web server. ' +
+      'Double-click START-LOCAL.bat in the project folder, then open http://localhost:3000'
+    );
     return;
   }
-  firebase.initializeApp(window.FIREBASE_CONFIG);
-  auth = firebase.auth();
-  db = firebase.firestore();
-  await ensureSettingsDoc();
-  bindFirestoreListeners();
-  firebaseReady = true;
-  hideAppLoading();
+  if (!firebaseConfigValid()) {
+    showAppLoadingError(firebaseConfigErrorMessage());
+    return;
+  }
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(getFirebaseConfig());
+    }
+    auth = firebase.auth();
+    db = firebase.firestore();
+    await loadSettings();
+    bindSettingsListener();
+    firebaseReady = true;
+    hideAppLoading();
 
-  auth.onAuthStateChanged(async fbUser => {
-    if (!fbUser || !fbUser.emailVerified) return;
-    const verifyPanel = document.getElementById('form-signup-verify');
-    if (verifyPanel && !verifyPanel.classList.contains('hidden')) return;
-    if (document.getElementById('page-app').classList.contains('active')) return;
-    const profSnap = await db.collection('profiles').doc(fbUser.uid).get();
-    if (!profSnap.exists) return;
-    currentUser = profileToUser(fbUser.uid, profSnap.data(), fbUser.email);
-    if (!currentUser.disabled) enterApp();
-  });
+    auth.onAuthStateChanged(async fbUser => {
+      if (!fbUser || !fbUser.emailVerified) {
+        stopAppDataListeners();
+        return;
+      }
+      const verifyPanel = document.getElementById('form-signup-verify');
+      if (verifyPanel && !verifyPanel.classList.contains('hidden')) return;
+      if (document.getElementById('page-app').classList.contains('active')) return;
+      const profSnap = await db.collection('profiles').doc(fbUser.uid).get();
+      if (!profSnap.exists) return;
+      currentUser = profileToUser(fbUser.uid, profSnap.data(), fbUser.email);
+      if (!currentUser.disabled) enterApp();
+    });
+  } catch (err) {
+    console.error('initFirebase failed:', err);
+    const msg = err.code === 'permission-denied'
+      ? 'Firestore blocked access. In Firebase Console → Firestore → Rules, publish the latest firestore.rules from this project (settings must allow public read).'
+      : ('Could not connect: ' + (err.message || String(err)));
+    showAppLoadingError(msg);
+  }
 }
 
 function authErrorMessage(err) {
@@ -1499,6 +1564,7 @@ async function changePassword() {
 async function logout() {
   pendingSignup = null;
   currentUser = null;
+  stopAppDataListeners();
   if (auth) await auth.signOut();
   document.getElementById('page-app').classList.remove('active');
   document.getElementById('page-auth').classList.add('active');
@@ -1514,6 +1580,9 @@ async function logout() {
 function enterApp() {
   document.getElementById('page-auth').classList.remove('active');
   document.getElementById('page-app').classList.add('active');
+
+  startAppDataListeners();
+  seedSettingsIfAdmin().catch(err => console.warn('seed settings', err));
 
   const initials = currentUser.firstName[0]+currentUser.lastName[0];
   const COLORS = ['#2563eb','#7c3aed','#16a34a','#ea580c','#ca8a04'];
@@ -2183,11 +2252,8 @@ document.querySelectorAll('.modal-overlay').forEach(ov=>{
   ov.addEventListener('click', e=>{ if(e.target===ov) ov.classList.remove('open'); });
 });
 
-/* Bootstrap Firebase + dept dropdown */
-initFirebase().catch(err => {
-  console.error(err);
-  showAppLoadingError('Could not connect to Firebase. Check firebase-config.js and Firestore rules.');
-});
+/* Bootstrap Firebase */
+initFirebase();
 </script>
 </body>
 </html>
