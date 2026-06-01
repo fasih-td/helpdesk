@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ThinkDigitally — IT Helpdesk Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ─── RESET ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Light theme */
+  --bg:          #f5f7fa;
+  --bg2:         #ffffff;
+  --bg3:         #eef1f6;
+  --surface:     #ffffff;
+  --surface2:    #f0f3f8;
+  --border:      #e2e8f0;
+  --border2:     #cbd5e1;
+
+  /* Brand */
+  --primary:     #2563eb;
+  --primary-lt:  #eff6ff;
+  --primary-mid: #bfdbfe;
+  --primary-dk:  #1d4ed8;
+
+  /* Accents */
+  --green:       #16a34a;
+  --green-lt:    #f0fdf4;
+  --green-mid:   #bbf7d0;
+  --orange:      #ea580c;
+  --orange-lt:   #fff7ed;
+  --orange-mid:  #fed7aa;
+  --red:         #dc2626;
+  --red-lt:      #fef2f2;
+  --red-mid:     #fecaca;
+  --yellow:      #ca8a04;
+  --yellow-lt:   #fefce8;
+  --yellow-mid:  #fef08a;
+  --purple:      #7c3aed;
+  --purple-lt:   #f5f3ff;
+  --purple-mid:  #ddd6fe;
+
+  /* Text */
+  --text:        #0f172a;
+  --text2:       #475569;
+  --text3:       #94a3b8;
+  --text4:       #cbd5e1;
+
+  /* Misc */
+  --radius:      10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow:      0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:   0 12px 32px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.05);
+
+  --font:  'Plus Jakarta Sans', sans-serif;
+  --mono:  'JetBrains Mono', monospace;
+
+  --sidebar-w: 252px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* ─── PAGES ─── */
+.page { display: none; min-height: 100vh; }
+.page.active { display: flex; }
+
+/* ════════════════════════════════════
+   AUTH
+════════════════════════════════════ */
+#page-auth {
+  align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 50%, #f0fdf4 100%);
+  min-height: 100vh; padding: 24px;
+  position: relative; overflow: hidden;
+}
+#page-auth::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 20% 20%, rgba(37,99,235,.07) 0%, transparent 55%),
+              radial-gradient(ellipse at 80% 80%, rgba(124,58,237,.05) 0%, transparent 55%);
+  pointer-events: none;
+}
+.auth-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 100%; max-width: 448px;
+  padding: 40px;
+  box-shadow: var(--shadow-lg);
+  position: relative; z-index: 1;
+  animation: slideUp .4s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.auth-logo { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+.auth-logo-icon {
+  width:42px; height:42px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; box-shadow: 0 4px 12px rgba(37,99,235,.25);
+}
+.auth-logo-name {
+  font-size:20px; font-weight:800; color:var(--text);
+  letter-spacing:-.3px;
+}
+.auth-logo-name span { color: var(--primary); }
+.auth-logo-tag { font-size:11px; color:var(--text3); font-family:var(--mono); margin-top:1px; }
+
+.auth-tabs {
+  display:flex; gap:3px;
+  background: var(--bg3);
+  border-radius:9px; padding:3px;
+  margin-bottom:24px;
+}
+.auth-tab {
+  flex:1; padding:8px 0;
+  border:none; background:none;
+  color:var(--text2); font-family:var(--font);
+  font-size:13.5px; font-weight:600;
+  border-radius:7px; cursor:pointer; transition:all .18s;
+}
+.auth-tab.active {
+  background:#fff; color:var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+.auth-title { font-size:22px; font-weight:800; margin-bottom:4px; }
+.auth-sub { font-size:13px; color:var(--text3); margin-bottom:22px; }
+
+/* form pieces */
+.form-group { margin-bottom:16px; }
+.form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text2); margin-bottom:6px; }
+.form-input {
+  width:100%; padding:10px 13px;
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font); font-size:14px;
+  outline:none; transition: border-color .18s, box-shadow .18s;
+}
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+select.form-input { cursor:pointer; }
+textarea.form-input { resize: vertical; }
+.form-error { font-size:12px; color:var(--red); margin-top:4px; display:none; }
+.form-error.show { display:block; }
+.form-hint { font-size:12px; color:var(--text3); margin-top:4px; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  padding:10px 18px; border:none; border-radius:var(--radius);
+  font-family:var(--font); font-size:13.5px; font-weight:600;
+  cursor:pointer; transition:all .18s; white-space:nowrap; text-decoration:none;
+}
+.btn-primary {
+  background: var(--primary); color:#fff;
+  box-shadow: 0 2px 8px rgba(37,99,235,.3);
+  width:100%;
+}
+.btn-primary:hover { background:var(--primary-dk); box-shadow:0 4px 12px rgba(37,99,235,.35); transform:translateY(-1px); }
+.btn-primary:active { transform:translateY(0); }
+.btn-secondary { background:var(--surface2); color:var(--text2); border:1.5px solid var(--border); }
+.btn-secondary:hover { background:var(--border); color:var(--text); }
+.btn-danger { background:var(--red-lt); color:var(--red); border:1.5px solid var(--red-mid); }
+.btn-danger:hover { background:var(--red); color:#fff; }
+.btn-success { background:var(--green-lt); color:var(--green); border:1.5px solid var(--green-mid); }
+.btn-success:hover { background:var(--green); color:#fff; }
+.btn-sm { padding:7px 13px; font-size:12.5px; }
+.btn-xs { padding:5px 10px; font-size:12px; border-radius:7px; }
+
+/* ─── TOAST ─── */
+.toast {
+  position:fixed; bottom:24px; right:24px;
+  background:#fff; border:1.5px solid var(--border);
+  border-radius:var(--radius); padding:12px 16px;
+  display:flex; align-items:center; gap:10px;
+  font-size:13.5px; z-index:9999;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn .3s cubic-bezier(.16,1,.3,1) both;
+  max-width:320px;
+}
+@keyframes toastIn {
+  from { opacity:0; transform:translateY(12px) scale(.96); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.toast.fadeout { animation:toastOut .25s ease forwards; }
+@keyframes toastOut { to { opacity:0; transform:translateY(8px); } }
+
+/* ════════════════════════════════════
+   APP LAYOUT
+════════════════════════════════════ */
+#page-app { flex-direction:row; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-w); flex-shrink:0;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  display:flex; flex-direction:column;
+  height:100vh; position:sticky; top:0;
+  overflow-y:auto;
+}
+.sb-logo {
+  padding:20px 18px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+.sb-logo-icon {
+  width:34px; height:34px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  border-radius:8px; display:flex; align-items:center; justify-content:center;
+  font-size:15px; flex-shrink:0;
+  box-shadow:0 2px 8px rgba(37,99,235,.2);
+}
+.sb-logo-name { font-size:17px; font-weight:800; letter-spacing:-.2px; }
+.sb-logo-name span { color:var(--primary); }
+
+.sb-user {
+  padding:14px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+.sb-avatar {
+  width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; flex-shrink:0;
+}
+.sb-user-name { font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sb-user-role { font-size:11px; color:var(--text3); font-family:var(--mono); }
+
+.sb-nav { flex:1; padding:10px 10px; }
+.nav-section {
+  font-size:10px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:.1em;
+  padding:10px 8px 4px; font-family:var(--mono);
+}
+.nav-item {
+  display:flex; align-items:center; gap:9px;
+  padding:9px 10px; border-radius:8px;
+  cursor:pointer; font-size:13.5px; font-weight:500;
+  color:var(--text2); transition:all .15s;
+  margin-bottom:1px; border:none; background:none;
+  width:100%; text-align:left;
+}
+.nav-item:hover { background:var(--bg3); color:var(--text); }
+.nav-item.active { background:var(--primary-lt); color:var(--primary); font-weight:600; }
+.nav-icon { font-size:15px; width:20px; text-align:center; flex-shrink:0; }
+.nav-badge {
+  margin-left:auto;
+  background:var(--red); color:#fff;
+  font-size:10px; font-weight:700;
+  padding:1px 6px; border-radius:99px;
+  font-family:var(--mono); display:none;
+}
+.nav-badge.show { display:inline; }
+
+.sb-footer { padding:10px; border-top:1px solid var(--border); }
+.btn-logout {
+  width:100%; display:flex; align-items:center; gap:9px;
+  padding:9px 10px; border-radius:8px;
+  border:none; background:none; cursor:pointer;
+  color:var(--text3); font-size:13px; font-weight:500;
+  font-family:var(--font); transition:all .15s;
+}
+.btn-logout:hover { background:var(--red-lt); color:var(--red); }
+
+/* MAIN */
+.main { flex:1; overflow-y:auto; background:var(--bg); min-height:100vh; }
+.main-header {
+  padding:18px 28px;
+  border-bottom:1px solid var(--border);
+  background:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:10;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.header-title { font-size:18px; font-weight:800; letter-spacing:-.2px; }
+.header-sub { font-size:12px; color:var(--text3); margin-top:1px; }
+
+.content { padding:24px 28px; }
+
+/* ─── VIEWS ─── */
+.view { display:none; }
+.view.active { display:block; }
+
+/* ─── STAT CARDS ─── */
+.stats-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:14px; margin-bottom:22px;
+}
+.stat-card {
+  background:#fff; border:1.5px solid var(--border);
+  border-radius:var(--radius-lg); padding:18px;
+  transition: all .18s; cursor:default;
+}
+.stat-card:hover { box-shadow:var(--shadow); transform:translateY(-1px); }
+.stat-icon { font-size:22px; margin-bottom:10px; }
+.stat-label { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; font-family:var(--mono); }
+.stat-value { font-size:30px; font-weight:800; line-height:1.1; margin:4px 0 2px; }
+.stat-sub { font-size:11.5px; color:var(--text3); }
+
+/* ─── CARDS ─── */
+.card {
+  background:#fff; border:1px solid var(--border);
+  border-radius:var(--radius-lg); overflow:hidden;
+  margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.card-header {
+  padding:16px 20px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.card-title { font-size:15px; font-weight:700; }
+.card-body { padding:20px; }
+
+/* ─── TABLES ─── */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead tr { border-bottom:1.5px solid var(--border); background:var(--bg3); }
+th {
+  text-align:left; padding:9px 14px;
+  font-size:10.5px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:.08em; font-family:var(--mono);
+  white-space:nowrap;
+}
+tbody tr { border-bottom:1px solid var(--border); transition:background .12s; cursor:pointer; }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:hover { background:var(--bg3); }
+td { padding:11px 14px; color:var(--text2); vertical-align:middle; }
+.td-main { color:var(--text); font-weight:600; font-size:13.5px; }
+
+/* ─── BADGES ─── */
+.badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 9px; border-radius:6px;
+  font-size:11px; font-weight:700;
+  font-family:var(--mono); letter-spacing:.02em; white-space:nowrap;
+}
+.bd { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
+.badge-open     { background:var(--primary-lt); color:var(--primary); }
+.badge-open .bd { background:var(--primary); }
+.badge-inprog   { background:var(--yellow-lt); color:var(--yellow); }
+.badge-inprog .bd { background:var(--yellow); }
+.badge-resolved { background:var(--green-lt); color:var(--green); }
+.badge-resolved .bd { background:var(--green); }
+.badge-closed   { background:var(--bg3); color:var(--text3); }
+.badge-closed .bd { background:var(--text3); }
+
+.badge-plow     { background:var(--green-lt); color:var(--green); }
+.badge-pmedium  { background:var(--yellow-lt); color:var(--yellow); }
+.badge-phigh    { background:var(--orange-lt); color:var(--orange); }
+.badge-pcritical{ background:var(--red-lt); color:var(--red); }
+
+.badge-request  { background:var(--purple-lt); color:var(--purple); }
+.badge-issue    { background:var(--orange-lt); color:var(--orange); }
+.badge-admin    { background:var(--primary-lt); color:var(--primary); }
+.badge-employee { background:var(--bg3); color:var(--text3); }
+
+.ticket-id { font-family:var(--mono); font-size:12px; color:var(--primary); font-weight:600; }
+
+/* ─── FILTER BAR ─── */
+.filter-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+.filter-select {
+  padding:7px 11px;
+  background:#fff; border:1.5px solid var(--border);
+  border-radius:var(--radius); color:var(--text);
+  font-family:var(--font); font-size:13px; outline:none; cursor:pointer;
+  transition:border-color .18s;
+}
+.filter-select:focus { border-color:var(--primary); }
+.search-bar {
+  padding:7px 12px;
+  background:#fff; border:1.5px solid var(--border);
+  border-radius:var(--radius); color:var(--text);
+  font-family:var(--font); font-size:13px; outline:none; flex:1; min-width:200px;
+  transition:border-color .18s;
+}
+.search-bar:focus { border-color:var(--primary); }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position:fixed; inset:0;
+  background:rgba(15,23,42,.35);
+  backdrop-filter:blur(3px);
+  z-index:1000; display:none;
+  align-items:center; justify-content:center;
+  padding:20px;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:#fff; border:1px solid var(--border);
+  border-radius:var(--radius-xl); width:100%; max-width:600px;
+  max-height:90vh; overflow-y:auto;
+  box-shadow:var(--shadow-lg);
+  animation:slideUp .3s cubic-bezier(.16,1,.3,1) both;
+}
+.modal-header {
+  padding:18px 22px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; background:#fff; z-index:2;
+}
+.modal-title { font-size:16px; font-weight:800; }
+.modal-close {
+  width:30px; height:30px; border-radius:7px;
+  border:1.5px solid var(--border); background:var(--bg3);
+  color:var(--text3); cursor:pointer; font-size:14px;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s;
+}
+.modal-close:hover { background:var(--red-lt); color:var(--red); border-color:var(--red-mid); }
+.modal-body { padding:22px; }
+.modal-footer {
+  padding:14px 22px; border-top:1px solid var(--border);
+  display:flex; gap:8px; justify-content:flex-end;
+}
+
+/* ─── TICKET FORM ─── */
+.type-selector { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+.type-opt {
+  border:2px solid var(--border); border-radius:var(--radius-lg);
+  padding:18px 14px; cursor:pointer; transition:all .18s;
+  text-align:center; background:var(--bg3);
+}
+.type-opt:hover { border-color:var(--primary-mid); background:var(--primary-lt); }
+.type-opt.selected { border-color:var(--primary); background:var(--primary-lt); }
+.type-opt-icon { font-size:28px; margin-bottom:8px; }
+.type-opt-label { font-weight:700; font-size:14px; }
+.type-opt-sub { font-size:12px; color:var(--text3); margin-top:3px; }
+
+.acc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; margin-bottom:14px; }
+.acc-opt {
+  border:2px solid var(--border); border-radius:var(--radius);
+  padding:12px 8px; cursor:pointer; transition:all .18s;
+  text-align:center; background:#fff;
+}
+.acc-opt:hover { border-color:var(--primary-mid); background:var(--primary-lt); }
+.acc-opt.selected { border-color:var(--primary); background:var(--primary-lt); }
+.acc-opt-icon { font-size:22px; margin-bottom:5px; }
+.acc-opt-label { font-size:11.5px; font-weight:600; color:var(--text2); }
+
+.form-section-title {
+  font-size:13px; font-weight:700; color:var(--text2);
+  padding-bottom:10px; border-bottom:1px solid var(--border);
+  margin-bottom:16px; display:flex; align-items:center; gap:8px;
+}
+.form-section-title::before {
+  content:''; width:3px; height:14px;
+  background:var(--primary); border-radius:2px; display:inline-block;
+}
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+/* ─── COMMENT ─── */
+.comment { display:flex; gap:10px; margin-bottom:12px; }
+.comment-av {
+  width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; flex-shrink:0;
+}
+.comment-box {
+  flex:1; background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius); padding:10px 13px;
+}
+.comment-meta { font-size:11px; color:var(--text3); margin-bottom:4px; font-family:var(--mono); }
+.comment-text { font-size:13px; color:var(--text2); line-height:1.5; }
+.comment-box.admin-reply {
+  background:var(--primary-lt); border-color:var(--primary-mid);
+}
+.comment-box.admin-reply .comment-meta { color:var(--primary); }
+
+/* ─── PROFILE ─── */
+.profile-head { display:flex; align-items:center; gap:16px; margin-bottom:22px; }
+.profile-av { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; }
+
+/* ─── EMPTY STATE ─── */
+.empty { text-align:center; padding:48px 20px; color:var(--text3); }
+.empty-icon { font-size:40px; margin-bottom:10px; opacity:.5; }
+.empty-text { font-size:13.5px; }
+
+/* ─── STATUS ROW ─── */
+.status-row { display:flex; gap:10px; align-items:center; padding-top:14px; border-top:1px solid var(--border); margin-top:14px; }
+.status-row label { font-size:13px; color:var(--text3); flex-shrink:0; font-weight:500; }
+
+/* ─── NOTIF ─── */
+.notif-btn {
+  width:34px; height:34px; border-radius:8px;
+  border:1.5px solid var(--border); background:var(--bg3);
+  color:var(--text2); cursor:pointer; font-size:15px;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s; position:relative;
+}
+.notif-btn:hover { border-color:var(--primary); color:var(--primary); }
+.notif-dot {
+  position:absolute; top:-3px; right:-3px;
+  width:14px; height:14px; border-radius:50%;
+  background:var(--red); color:#fff;
+  font-size:8px; font-weight:700; font-family:var(--mono);
+  display:none; align-items:center; justify-content:center;
+}
+.notif-dot.show { display:flex; }
+
+/* ─── DIVIDER ─── */
+hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
+
+/* ─── UTILITY ─── */
+.hidden { display:none !important; }
+
+#app-loading {
+  position:fixed; inset:0; z-index:10000;
+  background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+}
+#app-loading.hide { display:none; }
+.app-loading-spin {
+  width:36px; height:36px; border:3px solid var(--border);
+  border-top-color:var(--primary); border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.text-primary { color:var(--primary); }
+.text-muted   { color:var(--text3); }
+.fw7 { font-weight:700; }
+.mt8  { margin-top:8px; }
+.mt14 { margin-top:14px; }
+.mt20 { margin-top:20px; }
+.flex { display:flex; }
+.items-center { align-items:center; }
+.gap8 { gap:8px; }
+.ml-auto { margin-left:auto; }
+
+/* ─── SECTION LABEL ─── */
+.section-label {
+  font-size:10.5px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:.1em; font-family:var(--mono);
+  margin-bottom:8px;
+}
+
+/* ─── SETTINGS CHIPS ─── */
+.chip-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.chip {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 10px; background:var(--bg3);
+  border:1.5px solid var(--border); border-radius:7px;
+  font-size:12.5px; font-weight:500;
+}
+.chip-del {
+  width:16px; height:16px; border-radius:50%;
+  background:var(--red-lt); color:var(--red);
+  border:none; cursor:pointer; font-size:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; flex-shrink:0; line-height:1;
+}
+.chip-del:hover { background:var(--red); color:#fff; }
+.add-chip-row { display:flex; gap:8px; }
+.add-chip-input {
+  flex:1; padding:8px 12px;
+  border:1.5px solid var(--border); border-radius:var(--radius);
+  font-family:var(--font); font-size:13px; outline:none;
+  transition:border-color .18s;
+}
+.add-chip-input:focus { border-color:var(--primary); }
+
+/* ─── AUTH LINKS & OTP ─── */
+.auth-link-wrap { text-align:right; margin-top:-6px; margin-bottom:4px; }
+.auth-link {
+  background:none; border:none; padding:0;
+  color:var(--primary); font-family:var(--font); font-size:12.5px;
+  font-weight:600; cursor:pointer; text-decoration:underline;
+  text-underline-offset:2px;
+}
+.auth-link:hover { color:var(--primary-dk); }
+.auth-back {
+  background:none; border:none; padding:0; margin-bottom:14px;
+  color:var(--text3); font-family:var(--font); font-size:12.5px;
+  cursor:pointer; display:inline-flex; align-items:center; gap:4px;
+}
+.auth-back:hover { color:var(--text2); }
+.auth-step-title { font-size:18px; font-weight:800; margin-bottom:4px; }
+.auth-step-sub { font-size:13px; color:var(--text3); margin-bottom:18px; }
+.otp-input {
+  text-align:center; letter-spacing:.35em; font-family:var(--mono);
+  font-size:22px; font-weight:700; padding:12px 14px;
+}
+.verify-email-hint {
+  font-size:12.5px; color:var(--text2);
+  background:var(--primary-lt); border:1px solid var(--primary-mid);
+  border-radius:var(--radius); padding:10px 12px; margin-bottom:14px;
+}
+.verify-demo-code {
+  font-size:12px; color:var(--text3); margin-top:10px;
+  background:var(--yellow-lt); border:1px solid var(--yellow-mid);
+  border-radius:var(--radius); padding:8px 10px; display:none;
+}
+.verify-demo-code.show { display:block; }
+.resend-row { display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
+.resend-btn {
+  background:none; border:none; color:var(--primary);
+  font-family:var(--font); font-size:12.5px; font-weight:600;
+  cursor:pointer; padding:0;
+}
+.resend-btn:disabled { color:var(--text4); cursor:not-allowed; }
+.fp-step { display:none; }
+.fp-step.active { display:block; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width:768px) {
+  .sidebar { width:100%; height:auto; position:static; }
+  #page-app { flex-direction:column; }
+  .form-row { grid-template-columns:1fr; }
+  .content { padding:16px; }
+  .main-header { padding:14px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app-loading">
+  <div class="app-loading-spin"></div>
+  <div style="font-size:14px;color:var(--text2);">Connecting to ThinkDigitally…</div>
+  <div id="app-loading-err" style="font-size:12px;color:var(--red);max-width:320px;text-align:center;display:none;"></div>
+</div>
+
+<!-- ═══════════ AUTH PAGE ═══════════ -->
+<div id="page-auth" class="page active">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🖥️</div>
+      <div>
+        <div class="auth-logo-name">Think<span>Digitally</span></div>
+        <div class="auth-logo-tag">IT Helpdesk Portal</div>
+      </div>
+    </div>
+
+    <div class="auth-tabs" id="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('signin')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- SIGN IN -->
+    <div id="form-signin">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input id="si-email" type="email" class="form-input" placeholder="you@company.com" />
+        <div id="si-email-err" class="form-error"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input id="si-pass" type="password" class="form-input" placeholder="Enter your password" />
+        <div id="si-pass-err" class="form-error"></div>
+        <div class="auth-link-wrap">
+          <button type="button" class="auth-link" onclick="showForgotPassword()">Forgot password?</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="signIn()" style="margin-top:6px;">Sign In →</button>
+      <p class="form-hint" style="text-align:center;margin-top:14px;">
+        IT admin: use the account created in Firebase (see README).
+      </p>
+    </div>
+
+    <!-- SIGN UP -->
+    <div id="form-signup" class="hidden">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input id="su-fname" type="text" class="form-input" placeholder="John" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input id="su-lname" type="text" class="form-input" placeholder="Doe" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Work Email</label>
+        <input id="su-email" type="email" class="form-input" placeholder="you@company.com" />
+        <div id="su-email-err" class="form-error"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Department</label>
+        <select id="su-dept" class="form-input">
+          <option value="">Select Department</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input id="su-pass" type="password" class="form-input" placeholder="Min. 6 characters" />
+        <div id="su-pass-err" class="form-error"></div>
+      </div>
+      <button class="btn btn-primary" onclick="signUp()" style="margin-top:6px;">Create Account →</button>
+    </div>
+
+    <!-- SIGN UP — EMAIL VERIFICATION (Firebase link) -->
+    <div id="form-signup-verify" class="hidden">
+      <button type="button" class="auth-back" onclick="backToSignup()">← Back to sign up</button>
+      <div class="auth-step-title">Verify your email</div>
+      <div class="auth-step-sub" id="su-verify-sub">Open the verification link Firebase sent to your inbox, then continue below.</div>
+      <div class="verify-email-hint" id="su-verify-email">—</div>
+      <div id="su-code-err" class="form-error"></div>
+      <button class="btn btn-primary" onclick="verifySignupEmail()" style="margin-top:6px;">I've verified — Continue →</button>
+      <div class="resend-row" style="margin-top:14px;">
+        <span class="form-hint" style="margin:0;" id="su-resend-timer"></span>
+        <button type="button" class="resend-btn" id="su-resend-btn" onclick="resendSignupVerification()">Resend verification email</button>
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD (Firebase reset link) -->
+    <div id="form-forgot" class="hidden">
+      <button type="button" class="auth-back" onclick="showAuthPanel('signin')">← Back to sign in</button>
+      <div class="auth-step-title">Reset password</div>
+      <div class="auth-step-sub" id="fp-sub">We'll email you a secure link to choose a new password.</div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input id="fp-email" type="email" class="form-input" placeholder="you@company.com" />
+        <div id="fp-email-err" class="form-error"></div>
+      </div>
+      <button class="btn btn-primary" onclick="sendForgotPasswordEmail()" style="margin-top:6px;">Send Reset Link →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ APP PAGE ═══════════ -->
+<div id="page-app" class="page">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">🖥️</div>
+      <div class="sb-logo-name">Think<span>Digitally</span></div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="sb-user-name" id="sb-name">—</div>
+        <div class="sb-user-role" id="sb-role">employee</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-section">Menu</div>
+      <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard',this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </button>
+      <button class="nav-item" data-view="new-ticket" onclick="switchView('new-ticket',this)">
+        <span class="nav-icon">➕</span> New Ticket
+      </button>
+      <button class="nav-item" data-view="my-tickets" onclick="switchView('my-tickets',this)">
+        <span class="nav-icon">🎫</span> My Tickets
+        <span class="nav-badge" id="badge-my-open"></span>
+      </button>
+
+      <div id="admin-nav" class="hidden">
+        <div class="nav-section" style="margin-top:10px;">IT Admin</div>
+        <button class="nav-item" data-view="all-tickets" onclick="switchView('all-tickets',this)">
+          <span class="nav-icon">📋</span> All Tickets
+          <span class="nav-badge" id="badge-all-open"></span>
+        </button>
+        <button class="nav-item" data-view="users" onclick="switchView('users',this)">
+          <span class="nav-icon">👥</span> Users
+        </button>
+        <button class="nav-item" data-view="settings" onclick="switchView('settings',this)">
+          <span class="nav-icon">⚙️</span> Settings
+        </button>
+      </div>
+
+      <div class="nav-section" style="margin-top:10px;">Account</div>
+      <button class="nav-item" data-view="profile" onclick="switchView('profile',this)">
+        <span class="nav-icon">👤</span> Profile
+      </button>
+    </nav>
+    <div class="sb-footer">
+      <button class="btn-logout" onclick="logout()"><span>🚪</span> Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <div class="header-title" id="header-title">Dashboard</div>
+        <div class="header-sub" id="header-sub">Welcome back</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);" id="hdr-time"></div>
+        <button class="notif-btn" onclick="switchView('my-tickets',document.querySelector('[data-view=my-tickets]'))">
+          🔔<span class="notif-dot" id="notif-dot"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <div id="view-dashboard" class="view active">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Recent Tickets</div>
+            <button class="btn btn-secondary btn-sm" onclick="switchView('my-tickets',document.querySelector('[data-view=my-tickets]'))">View All</button>
+          </div>
+          <div class="table-wrap">
+            <table><thead><tr><th>ID</th><th>Subject</th><th>Type</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="recent-body"></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Quick Actions</div></div>
+          <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <button class="type-opt" onclick="switchView('new-ticket',document.querySelector('[data-view=new-ticket]'));setTimeout(()=>selectType('request'),80)">
+              <div class="type-opt-icon">🛒</div>
+              <div class="type-opt-label">Request Accessory</div>
+              <div class="type-opt-sub">Keyboard, mouse, headphones…</div>
+            </button>
+            <button class="type-opt" onclick="switchView('new-ticket',document.querySelector('[data-view=new-ticket]'));setTimeout(()=>selectType('issue'),80)">
+              <div class="type-opt-icon">🔧</div>
+              <div class="type-opt-label">Report IT Issue</div>
+              <div class="type-opt-sub">Laptop, software, network…</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NEW TICKET ── -->
+      <div id="view-new-ticket" class="view">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Create New Ticket</div></div>
+          <div class="card-body">
+            <div class="form-section-title">Ticket Type</div>
+            <div class="type-selector">
+              <div class="type-opt" id="type-req-opt" onclick="selectType('request')">
+                <div class="type-opt-icon">🛒</div>
+                <div class="type-opt-label">Accessory Request</div>
+                <div class="type-opt-sub">Request new IT equipment</div>
+              </div>
+              <div class="type-opt" id="type-iss-opt" onclick="selectType('issue')">
+                <div class="type-opt-icon">🔧</div>
+                <div class="type-opt-label">IT Issue / Problem</div>
+                <div class="type-opt-sub">Report a technical problem</div>
+              </div>
+            </div>
+            <input type="hidden" id="nt-type" />
+
+            <div id="req-section" class="hidden">
+              <div class="form-section-title">Select Accessories</div>
+              <div class="acc-grid" id="acc-grid"></div>
+              <div class="form-group">
+                <label class="form-label">Quantity / Specification</label>
+                <input id="nt-qty" type="text" class="form-input" placeholder="e.g. 1× Mechanical keyboard, Cherry MX Blue" />
+              </div>
+            </div>
+
+            <div id="iss-section" class="hidden">
+              <div class="form-section-title">Issue Details</div>
+              <div class="form-row" style="margin-bottom:14px;">
+                <div class="form-group">
+                  <label class="form-label">Device / Category</label>
+                  <select id="nt-category" class="form-input">
+                    <option value="">Select category</option>
+                    <option>💻 Laptop / Desktop</option>
+                    <option>🖱 Mouse</option>
+                    <option>⌨️ Keyboard</option>
+                    <option>🖥 Monitor / Display</option>
+                    <option>🌐 Internet / Network</option>
+                    <option>🔌 Power / Charging</option>
+                    <option>🎧 Headphones / Audio</option>
+                    <option>📱 Mobile Device</option>
+                    <option>🖨 Printer / Scanner</option>
+                    <option>💾 Software / App</option>
+                    <option>🔐 Access / Permissions</option>
+                    <option>📦 Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">When did it start?</label>
+                  <input id="nt-when" type="text" class="form-input" placeholder="e.g. Today morning, 2 days ago" />
+                </div>
+              </div>
+            </div>
+
+            <div id="common-fields" class="hidden">
+              <div class="form-section-title">Details</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Subject / Title</label>
+                  <input id="nt-subject" type="text" class="form-input" placeholder="Brief description" />
+                  <div id="nt-sub-err" class="form-error"></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Priority</label>
+                  <select id="nt-priority" class="form-input">
+                    <option value="low">🟢 Low</option>
+                    <option value="medium" selected>🟡 Medium</option>
+                    <option value="high">🟠 High</option>
+                    <option value="critical">🔴 Critical</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea id="nt-desc" class="form-input" rows="4" placeholder="Describe the issue or request in detail…"></textarea>
+                <div id="nt-desc-err" class="form-error"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Your Location / Floor (optional)</label>
+                <input id="nt-loc" type="text" class="form-input" placeholder="e.g. Floor 3, Desk 12" />
+              </div>
+              <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px;">
+                <button class="btn btn-secondary" onclick="resetForm()">Clear</button>
+                <button class="btn btn-primary" onclick="submitTicket()" style="width:auto;padding:10px 28px;">Submit Ticket 🚀</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MY TICKETS ── -->
+      <div id="view-my-tickets" class="view">
+        <div class="filter-bar">
+          <input class="search-bar" id="my-q" placeholder="🔍 Search…" oninput="renderMyTickets()" />
+          <select class="filter-select" id="my-fst" onchange="renderMyTickets()">
+            <option value="">All Status</option>
+            <option value="open">Open</option>
+            <option value="in-progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+          <select class="filter-select" id="my-fty" onchange="renderMyTickets()">
+            <option value="">All Types</option>
+            <option value="request">Request</option>
+            <option value="issue">Issue</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table><thead><tr><th>ID</th><th>Subject</th><th>Type</th><th>Priority</th><th>Status</th><th>Last Update</th><th></th></tr></thead>
+            <tbody id="my-tickets-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ALL TICKETS (ADMIN) ── -->
+      <div id="view-all-tickets" class="view">
+        <div class="filter-bar">
+          <input class="search-bar" id="all-q" placeholder="🔍 Search tickets or employees…" oninput="renderAllTickets()" />
+          <select class="filter-select" id="all-fst" onchange="renderAllTickets()">
+            <option value="">All Status</option>
+            <option value="open">Open</option>
+            <option value="in-progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+          <select class="filter-select" id="all-fty" onchange="renderAllTickets()">
+            <option value="">All Types</option>
+            <option value="request">Request</option>
+            <option value="issue">Issue</option>
+          </select>
+          <select class="filter-select" id="all-fpr" onchange="renderAllTickets()">
+            <option value="">All Priority</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table><thead><tr><th>ID</th><th>Subject</th><th>Employee</th><th>Type</th><th>Priority</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+            <tbody id="all-tickets-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USERS (ADMIN) ── -->
+      <div id="view-users" class="view">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Registered Users</div>
+            <div id="user-count" style="font-size:12px;color:var(--text3);"></div>
+          </div>
+          <div class="table-wrap">
+            <table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Department</th><th>Role</th><th>Tickets</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody id="users-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS (ADMIN) ── -->
+      <div id="view-settings" class="view">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+          <!-- Accessories -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">🛒 Accessories List</div></div>
+            <div class="card-body">
+              <p style="font-size:12.5px;color:var(--text3);margin-bottom:14px;">These appear as options when employees request accessories.</p>
+              <div class="chip-row" id="acc-chips"></div>
+              <div class="add-chip-row">
+                <input class="add-chip-input" id="new-acc-icon" placeholder="Icon (emoji)" style="width:72px;flex:none;" maxlength="2" />
+                <input class="add-chip-input" id="new-acc-label" placeholder="Name (e.g. Trackpad)" />
+                <button class="btn btn-primary btn-sm" onclick="addAccessory()" style="width:auto;">Add</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Departments -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">🏢 Departments List</div></div>
+            <div class="card-body">
+              <p style="font-size:12.5px;color:var(--text3);margin-bottom:14px;">These appear in the Sign Up dropdown for new employees.</p>
+              <div class="chip-row" id="dept-chips"></div>
+              <div class="add-chip-row">
+                <input class="add-chip-input" id="new-dept" placeholder="New department name" />
+                <button class="btn btn-primary btn-sm" onclick="addDept()" style="width:auto;">Add</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── PROFILE ── -->
+      <div id="view-profile" class="view">
+        <div class="card" style="max-width:560px;">
+          <div class="card-body">
+            <div class="profile-head">
+              <div class="profile-av" id="prof-av"></div>
+              <div>
+                <div style="font-size:20px;font-weight:800;" id="prof-name"></div>
+                <div style="font-size:13px;color:var(--text3);margin-top:2px;" id="prof-email"></div>
+                <div style="margin-top:8px;" id="prof-role-badge"></div>
+              </div>
+            </div>
+            <hr />
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div><div class="section-label">Department</div><div style="font-weight:600;margin-top:3px;" id="prof-dept">—</div></div>
+              <div><div class="section-label">Member Since</div><div style="font-weight:600;margin-top:3px;" id="prof-joined">—</div></div>
+              <div><div class="section-label">Total Tickets</div><div style="font-size:26px;font-weight:800;color:var(--primary);line-height:1.2;margin-top:3px;" id="prof-total">0</div></div>
+              <div><div class="section-label">Open Tickets</div><div style="font-size:26px;font-weight:800;color:var(--orange);line-height:1.2;margin-top:3px;" id="prof-open">0</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="max-width:560px;margin-top:20px;">
+          <div class="card-header"><div class="card-title">🔒 Change Password</div></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input id="pw-old" type="password" class="form-input" placeholder="Enter current password" />
+              <div id="pw-old-err" class="form-error"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input id="pw-new" type="password" class="form-input" placeholder="Min. 6 characters" />
+              <div id="pw-new-err" class="form-error"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input id="pw-confirm" type="password" class="form-input" placeholder="Re-enter new password" />
+              <div id="pw-confirm-err" class="form-error"></div>
+            </div>
+            <button class="btn btn-primary" onclick="changePassword()" style="width:auto;padding:10px 24px;">Update Password</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /page-app -->
+
+<!-- ── TICKET MODAL ── -->
+<div class="modal-overlay" id="modal-ticket">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Ticket Details</div>
+      <button class="modal-close" onclick="closeModal('modal-ticket')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-ticket-body"></div>
+    <div class="modal-footer" id="modal-ticket-footer"></div>
+  </div>
+</div>
+
+<!-- ── EMAIL MODAL ── -->
+<div class="modal-overlay" id="modal-email">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title">📧 Notify IT Admin</div>
+      <button class="modal-close" onclick="closeModal('modal-email')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-email-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-email')">Skip</button>
+      <button class="btn btn-primary" id="email-send-btn" style="width:auto;">Open Email Client 📬</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+/* ════════════════════════════════════
+   CONFIG
+════════════════════════════════════ */
+const ADMIN_EMAIL = 'muhammad.fasih@thinkdigitally.com'; // ← Change to your IT admin email
+
+/* ════════════════════════════════════
+   FIREBASE + IN-MEMORY CACHE (synced from Firestore)
+════════════════════════════════════ */
+let auth = null;
+let db = null;
+let firebaseReady = false;
+const cache = { users: [], tickets: [], accessories: [], departments: [] };
+
+const getUsers    = () => cache.users;
+const getTickets  = () => cache.tickets;
+const getAccList  = () => cache.accessories.length ? cache.accessories : DEFAULT_ACC;
+const getDeptList = () => cache.departments.length ? cache.departments : DEFAULT_DEPTS;
+
+async function saveSettings(partial) {
+  await db.collection('settings').doc('app').set(partial, { merge: true });
+}
+const saveAccList = a => saveSettings({ accessories: a });
+const saveDepts   = d => saveSettings({ departments: d });
+
+/* ════════════════════════════════════
+   DEFAULTS
+════════════════════════════════════ */
+const DEFAULT_ACC = [
+  {id:'keyboard',    icon:'⌨️', label:'Keyboard'},
+  {id:'mouse',       icon:'🖱',  label:'Mouse'},
+  {id:'headphones',  icon:'🎧', label:'Headphones'},
+  {id:'monitor',     icon:'🖥',  label:'Monitor'},
+  {id:'webcam',      icon:'📷', label:'Webcam'},
+  {id:'charger',     icon:'🔌', label:'Charger'},
+  {id:'usb-hub',     icon:'🔗', label:'USB Hub'},
+  {id:'docking',     icon:'🖇️', label:'Docking Station'},
+  {id:'speaker',     icon:'🔊', label:'Speaker'},
+  {id:'laptop-stand',icon:'📐', label:'Laptop Stand'},
+  {id:'mousepad',    icon:'🟫', label:'Mouse Pad'},
+  {id:'other',       icon:'📦', label:'Other'},
+];
+const DEFAULT_DEPTS = ['Engineering','Marketing','Sales','HR','Finance','Operations','Design','Management','IT'];
+
+const normEmail = e => (e || '').trim().toLowerCase();
+const RESEND_COOLDOWN_MS = 60 * 1000;
+
+function firebaseConfigValid() {
+  const c = window.FIREBASE_CONFIG;
+  return c && c.apiKey && c.apiKey !== 'YOUR_API_KEY' && c.projectId && c.projectId !== 'YOUR_PROJECT_ID';
+}
+
+function hideAppLoading() {
+  document.getElementById('app-loading').classList.add('hide');
+}
+
+function showAppLoadingError(msg) {
+  const el = document.getElementById('app-loading-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function profileToUser(uid, data, email) {
+  return {
+    id: uid,
+    firstName: data.firstName || '',
+    lastName: data.lastName || '',
+    email: data.email || email || '',
+    department: data.department || '',
+    role: data.role || 'employee',
+    joined: data.joined || new Date().toISOString(),
+    disabled: !!data.disabled,
+  };
+}
+
+async function ensureSettingsDoc() {
+  const ref = db.collection('settings').doc('app');
+  const snap = await ref.get();
+  if (!snap.exists) {
+    await ref.set({ accessories: DEFAULT_ACC, departments: DEFAULT_DEPTS });
+  }
+}
+
+function bindFirestoreListeners() {
+  db.collection('profiles').onSnapshot(snap => {
+    cache.users = snap.docs
+      .map(d => profileToUser(d.id, d.data()))
+      .filter(u => !u.disabled);
+    populateDeptSelect();
+    if (currentUser) {
+      const fresh = cache.users.find(u => u.id === currentUser.id);
+      if (fresh) currentUser = fresh;
+      updateBadges();
+      refreshActiveView();
+    }
+  }, err => console.error('profiles listener', err));
+
+  db.collection('tickets').onSnapshot(snap => {
+    cache.tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (currentUser) {
+      updateBadges();
+      refreshActiveView();
+    }
+  }, err => console.error('tickets listener', err));
+
+  db.collection('settings').doc('app').onSnapshot(snap => {
+    if (snap.exists) {
+      const d = snap.data();
+      if (d.accessories?.length) cache.accessories = d.accessories;
+      if (d.departments?.length) cache.departments = d.departments;
+    } else {
+      cache.accessories = [...DEFAULT_ACC];
+      cache.departments = [...DEFAULT_DEPTS];
+    }
+    populateDeptSelect();
+    if (currentUser) buildAccGrid();
+  }, err => console.error('settings listener', err));
+}
+
+function refreshActiveView() {
+  const active = document.querySelector('.view.active');
+  if (!active || !currentUser) return;
+  const name = active.id.replace('view-', '');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'my-tickets') renderMyTickets();
+  if (name === 'all-tickets') renderAllTickets();
+  if (name === 'users') renderUsers();
+  if (name === 'settings') renderSettings();
+  if (name === 'profile') renderProfile();
+}
+
+async function initFirebase() {
+  if (!firebaseConfigValid()) {
+    showAppLoadingError('Edit firebase-config.js with your Firebase web app keys (see README).');
+    return;
+  }
+  firebase.initializeApp(window.FIREBASE_CONFIG);
+  auth = firebase.auth();
+  db = firebase.firestore();
+  await ensureSettingsDoc();
+  bindFirestoreListeners();
+  firebaseReady = true;
+  hideAppLoading();
+
+  auth.onAuthStateChanged(async fbUser => {
+    if (!fbUser || !fbUser.emailVerified) return;
+    const verifyPanel = document.getElementById('form-signup-verify');
+    if (verifyPanel && !verifyPanel.classList.contains('hidden')) return;
+    if (document.getElementById('page-app').classList.contains('active')) return;
+    const profSnap = await db.collection('profiles').doc(fbUser.uid).get();
+    if (!profSnap.exists) return;
+    currentUser = profileToUser(fbUser.uid, profSnap.data(), fbUser.email);
+    if (!currentUser.disabled) enterApp();
+  });
+}
+
+function authErrorMessage(err) {
+  const code = err?.code || '';
+  const map = {
+    'auth/invalid-email': 'Invalid email address',
+    'auth/user-disabled': 'This account has been disabled',
+    'auth/user-not-found': 'No account found with this email',
+    'auth/wrong-password': 'Invalid email or password',
+    'auth/invalid-credential': 'Invalid email or password',
+    'auth/email-already-in-use': 'Email already registered',
+    'auth/weak-password': 'Password must be at least 6 characters',
+    'auth/too-many-requests': 'Too many attempts. Try again later.',
+    'auth/requires-recent-login': 'Please sign out and sign in again, then retry',
+  };
+  return map[code] || err.message || 'Something went wrong';
+}
+
+function startResendCooldown(prefix) {
+  const btn = document.getElementById(prefix + '-resend-btn');
+  const timerEl = document.getElementById(prefix + '-resend-timer');
+  if (!btn || !timerEl) return;
+  let left = RESEND_COOLDOWN_MS / 1000;
+  btn.disabled = true;
+  timerEl.textContent = 'Resend available in ' + left + 's';
+  const id = setInterval(() => {
+    left -= 1;
+    if (left <= 0) {
+      clearInterval(id);
+      btn.disabled = false;
+      timerEl.textContent = '';
+      return;
+    }
+    timerEl.textContent = 'Resend available in ' + left + 's';
+  }, 1000);
+}
+
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+let currentUser = null;
+let selAccs = [];
+let pendingSignup = null;
+let resendTimerSignup = null;
+
+/* ════════════════════════════════════
+   AUTH
+════════════════════════════════════ */
+function showAuthPanel(panel) {
+  const hideTabs = panel === 'signup-verify' || panel === 'forgot';
+  document.getElementById('auth-tabs').classList.toggle('hidden', hideTabs);
+  document.getElementById('form-signin').classList.toggle('hidden', panel !== 'signin');
+  document.getElementById('form-signup').classList.toggle('hidden', panel !== 'signup');
+  document.getElementById('form-signup-verify').classList.toggle('hidden', panel !== 'signup-verify');
+  document.getElementById('form-forgot').classList.toggle('hidden', panel !== 'forgot');
+}
+
+function switchAuthTab(tab) {
+  pendingSignup = null;
+  document.querySelectorAll('.auth-tab').forEach((t, i) =>
+    t.classList.toggle('active', (i === 0 && tab === 'signin') || (i === 1 && tab === 'signup')));
+  showAuthPanel(tab);
+  clearErrs();
+}
+
+async function backToSignup() {
+  pendingSignup = null;
+  if (auth.currentUser) await auth.signOut();
+  showAuthPanel('signup');
+}
+
+function showForgotPassword() {
+  pendingSignup = null;
+  document.getElementById('fp-email').value = document.getElementById('si-email').value.trim();
+  showAuthPanel('forgot');
+  clearErrs();
+}
+
+function populateDeptSelect() {
+  const sel = document.getElementById('su-dept');
+  const depts = getDeptList();
+  sel.innerHTML = '<option value="">Select Department</option>' +
+    depts.map(d => `<option>${esc(d)}</option>`).join('');
+}
+
+async function signIn() {
+  if (!firebaseReady) return toast('Still connecting to Firebase…', '⚠️');
+  const email = document.getElementById('si-email').value.trim();
+  const pass  = document.getElementById('si-pass').value;
+  clearErrs();
+  if (!email) return showErr('si-email-err', 'Email required');
+  if (!pass)  return showErr('si-pass-err', 'Password required');
+  try {
+    const cred = await auth.signInWithEmailAndPassword(email, pass);
+    const fbUser = cred.user;
+    if (!fbUser.emailVerified) {
+      pendingSignup = { email };
+      document.getElementById('su-verify-email').textContent = '📧 Verify ' + email + ' — check your inbox for Firebase’s link.';
+      showAuthPanel('signup-verify');
+      await fbUser.sendEmailVerification();
+      toast('Please verify your email first', '✉️');
+      return;
+    }
+    const profSnap = await db.collection('profiles').doc(fbUser.uid).get();
+    if (!profSnap.exists) {
+      await auth.signOut();
+      return showErr('si-pass-err', 'Profile not found. Contact IT admin.');
+    }
+    const user = profileToUser(fbUser.uid, profSnap.data(), fbUser.email);
+    if (user.disabled) {
+      await auth.signOut();
+      return showErr('si-pass-err', 'Account disabled');
+    }
+    currentUser = user;
+    enterApp();
+  } catch (err) {
+    showErr('si-pass-err', authErrorMessage(err));
+  }
+}
+
+async function signUp() {
+  if (!firebaseReady) return toast('Still connecting to Firebase…', '⚠️');
+  const fname = document.getElementById('su-fname').value.trim();
+  const lname = document.getElementById('su-lname').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const dept  = document.getElementById('su-dept').value;
+  const pass  = document.getElementById('su-pass').value;
+  clearErrs();
+  if (!fname || !lname) return toast('Enter your full name', '⚠️');
+  if (!email) return showErr('su-email-err', 'Email required');
+  if (!dept) return toast('Please select a department', '⚠️');
+  if (pass.length < 6) return showErr('su-pass-err', 'Minimum 6 characters');
+
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    const uid = cred.user.uid;
+    const role = normEmail(email) === normEmail(ADMIN_EMAIL) ? 'admin' : 'employee';
+    await db.collection('profiles').doc(uid).set({
+      firstName: fname,
+      lastName: lname,
+      email,
+      department: dept,
+      role,
+      joined: new Date().toISOString(),
+      disabled: false,
+    });
+    await cred.user.sendEmailVerification();
+    pendingSignup = { email, uid };
+    document.getElementById('su-verify-email').textContent = '📧 Verification link sent to ' + email;
+    showAuthPanel('signup-verify');
+    startResendCooldown('su');
+    toast('Check your email and click the verification link', '✉️');
+  } catch (err) {
+    showErr('su-email-err', authErrorMessage(err));
+  }
+}
+
+async function resendSignupVerification() {
+  const user = auth.currentUser;
+  if (!user) return toast('Sign up again to resend', '⚠️');
+  try {
+    await user.sendEmailVerification();
+    startResendCooldown('su');
+    toast('Verification email sent again', '✉️');
+  } catch (err) {
+    toast(authErrorMessage(err), '⚠️');
+  }
+}
+
+async function verifySignupEmail() {
+  clearErrs();
+  const user = auth.currentUser;
+  if (!user) return showErr('su-code-err', 'Session expired. Please sign up again.');
+  await user.reload();
+  if (!auth.currentUser.emailVerified) {
+    return showErr('su-code-err', 'Email not verified yet. Open the link in your inbox, then try again.');
+  }
+  const profSnap = await db.collection('profiles').doc(user.uid).get();
+  if (!profSnap.exists) return showErr('su-code-err', 'Profile missing. Contact IT admin.');
+  pendingSignup = null;
+  currentUser = profileToUser(user.uid, profSnap.data(), user.email);
+  toast('Welcome to ThinkDigitally!', '✅');
+  enterApp();
+}
+
+async function sendForgotPasswordEmail() {
+  if (!firebaseReady) return toast('Still connecting to Firebase…', '⚠️');
+  const email = document.getElementById('fp-email').value.trim();
+  clearErrs();
+  if (!email) return showErr('fp-email-err', 'Email required');
+  try {
+    await auth.sendPasswordResetEmail(email);
+    document.getElementById('si-email').value = email;
+    switchAuthTab('signin');
+    toast('Password reset link sent — check your email', '✉️');
+  } catch (err) {
+    showErr('fp-email-err', authErrorMessage(err));
+  }
+}
+
+async function changePassword() {
+  const oldPass = document.getElementById('pw-old').value;
+  const newPass = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  clearErrs();
+  if (!oldPass) return showErr('pw-old-err', 'Current password required');
+  if (newPass.length < 6) return showErr('pw-new-err', 'Minimum 6 characters');
+  if (newPass !== confirm) return showErr('pw-confirm-err', 'Passwords do not match');
+  if (oldPass === newPass) return showErr('pw-new-err', 'New password must be different');
+  const fbUser = auth.currentUser;
+  if (!fbUser) return toast('Not signed in', '⚠️');
+  try {
+    const cred = firebase.auth.EmailAuthProvider.credential(fbUser.email, oldPass);
+    await fbUser.reauthenticateWithCredential(cred);
+    await fbUser.updatePassword(newPass);
+    document.getElementById('pw-old').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+    toast('Password updated successfully', '✅');
+  } catch (err) {
+    showErr('pw-old-err', authErrorMessage(err));
+  }
+}
+
+async function logout() {
+  pendingSignup = null;
+  currentUser = null;
+  if (auth) await auth.signOut();
+  document.getElementById('page-app').classList.remove('active');
+  document.getElementById('page-auth').classList.add('active');
+  document.getElementById('si-email').value = '';
+  document.getElementById('si-pass').value = '';
+  switchAuthTab('signin');
+  populateDeptSelect();
+}
+
+/* ════════════════════════════════════
+   ENTER APP
+════════════════════════════════════ */
+function enterApp() {
+  document.getElementById('page-auth').classList.remove('active');
+  document.getElementById('page-app').classList.add('active');
+
+  const initials = currentUser.firstName[0]+currentUser.lastName[0];
+  const COLORS = ['#2563eb','#7c3aed','#16a34a','#ea580c','#ca8a04'];
+  const color  = COLORS[currentUser.id.charCodeAt(0) % COLORS.length];
+
+  const av = document.getElementById('sb-avatar');
+  av.textContent = initials;
+  av.style.background = color+'20';
+  av.style.color = color;
+  av.style.border = '2px solid '+color+'30';
+
+  document.getElementById('sb-name').textContent = currentUser.firstName+' '+currentUser.lastName;
+  document.getElementById('sb-role').textContent = currentUser.role==='admin' ? 'IT Admin' : 'Employee';
+
+  document.getElementById('admin-nav').classList.toggle('hidden', currentUser.role!=='admin');
+  buildAccGrid();
+  switchView('dashboard', document.querySelector('[data-view=dashboard]'));
+  updateBadges();
+  tickClock();
+  setInterval(tickClock, 30000);
+}
+
+function tickClock() {
+  const n = new Date();
+  document.getElementById('hdr-time').textContent =
+    n.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+
+    ' · '+n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* ════════════════════════════════════
+   VIEW SWITCHING
+════════════════════════════════════ */
+const TITLES = {
+  dashboard:    ['Dashboard','Overview of your IT helpdesk'],
+  'new-ticket': ['New Ticket','Submit a request or report an issue'],
+  'my-tickets': ['My Tickets','Your submitted tickets & admin replies'],
+  'all-tickets':['All Tickets','Manage all employee tickets'],
+  users:        ['Users','Manage employee accounts & roles'],
+  settings:     ['Settings','Manage accessories, departments'],
+  profile:      ['My Profile','Your account information'],
+};
+function switchView(name, btn) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el = document.getElementById('view-'+name);
+  if (el) el.classList.add('active');
+  if (btn) btn.classList.add('active');
+  const [title,sub] = TITLES[name]||[name,''];
+  document.getElementById('header-title').textContent = title;
+  document.getElementById('header-sub').textContent = sub;
+
+  if (name==='dashboard')   renderDashboard();
+  if (name==='my-tickets')  renderMyTickets();
+  if (name==='all-tickets') renderAllTickets();
+  if (name==='users')       renderUsers();
+  if (name==='settings')    renderSettings();
+  if (name==='profile') {
+    renderProfile();
+    document.getElementById('pw-old').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+    clearErrs();
+  }
+}
+
+/* ════════════════════════════════════
+   ACCESSORIES GRID (FORM)
+════════════════════════════════════ */
+function buildAccGrid() {
+  const grid = document.getElementById('acc-grid');
+  const list = getAccList();
+  grid.innerHTML = list.map(a=>`
+    <div class="acc-opt" id="ao-${a.id}" onclick="toggleAcc('${a.id}')">
+      <div class="acc-opt-icon">${a.icon}</div>
+      <div class="acc-opt-label">${esc(a.label)}</div>
+    </div>`).join('');
+}
+
+function toggleAcc(id) {
+  const el = document.getElementById('ao-'+id);
+  const i  = selAccs.indexOf(id);
+  if (i>=0) { selAccs.splice(i,1); el.classList.remove('selected'); }
+  else       { selAccs.push(id);   el.classList.add('selected'); }
+  if (selAccs.length>0) {
+    const names = selAccs.map(s=>getAccList().find(a=>a.id===s)?.label||s).join(', ');
+    document.getElementById('nt-subject').value = 'Accessory Request: '+names;
+  }
+}
+
+function selectType(type) {
+  document.getElementById('nt-type').value = type;
+  document.getElementById('type-req-opt').classList.toggle('selected', type==='request');
+  document.getElementById('type-iss-opt').classList.toggle('selected', type==='issue');
+  document.getElementById('req-section').classList.toggle('hidden', type!=='request');
+  document.getElementById('iss-section').classList.toggle('hidden', type!=='issue');
+  document.getElementById('common-fields').classList.remove('hidden');
+  if (type==='issue') document.getElementById('nt-subject').placeholder='e.g. Laptop fan very loud and overheating';
+  else document.getElementById('nt-subject').placeholder='Brief description';
+}
+
+function resetForm() {
+  document.getElementById('nt-type').value='';
+  ['type-req-opt','type-iss-opt'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+  ['req-section','iss-section','common-fields'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  ['nt-subject','nt-desc','nt-qty','nt-loc','nt-when'].forEach(id=>{document.getElementById(id).value='';});
+  selAccs=[]; document.querySelectorAll('.acc-opt').forEach(e=>e.classList.remove('selected'));
+}
+
+/* ════════════════════════════════════
+   SUBMIT TICKET
+════════════════════════════════════ */
+async function genTicketId() {
+  const ref = db.collection('meta').doc('app');
+  return db.runTransaction(async transaction => {
+    const doc = await transaction.get(ref);
+    const seq = (doc.exists ? (doc.data().ticketSeq || 0) : 0) + 1;
+    transaction.set(ref, { ticketSeq: seq }, { merge: true });
+    return 'TKT-' + String(seq).padStart(4, '0');
+  });
+}
+
+async function submitTicket() {
+  const type    = document.getElementById('nt-type').value;
+  const subject = document.getElementById('nt-subject').value.trim();
+  const desc    = document.getElementById('nt-desc').value.trim();
+  const priority= document.getElementById('nt-priority').value;
+  clearErrs();
+  if (!type)    return toast('Please select a ticket type','⚠️');
+  if (!subject) return showErr('nt-sub-err','Subject is required');
+  if (!desc)    return showErr('nt-desc-err','Description is required');
+
+  try {
+    const id = await genTicketId();
+    const t = {
+      id, userId: currentUser.id,
+      userName: currentUser.firstName + ' ' + currentUser.lastName,
+      userEmail: currentUser.email, userDept: currentUser.department,
+      type, subject, desc, priority,
+      location: document.getElementById('nt-loc').value.trim(),
+      status: 'open',
+      accessories: type === 'request' ? [...selAccs] : [],
+      quantity: document.getElementById('nt-qty').value.trim(),
+      category: document.getElementById('nt-category').value,
+      startedWhen: document.getElementById('nt-when').value.trim(),
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      comments: [],
+    };
+    await db.collection('tickets').doc(id).set(t);
+    resetForm();
+    updateBadges();
+    showEmailModal(t);
+    toast('Ticket ' + t.id + ' submitted!', '✅');
+    switchView('my-tickets', document.querySelector('[data-view=my-tickets]'));
+  } catch (err) {
+    toast('Could not submit ticket: ' + (err.message || err), '⚠️');
+  }
+}
+
+/* ════════════════════════════════════
+   EMAIL MODAL
+════════════════════════════════════ */
+function showEmailModal(t) {
+  const subj = encodeURIComponent(`[ThinkDigitally] ${t.id} — ${t.subject}`);
+  const body = encodeURIComponent(
+`New IT Ticket Submitted
+━━━━━━━━━━━━━━━━━━━
+Ticket ID  : ${t.id}
+Type       : ${t.type==='request'?'Accessory Request':'IT Issue'}
+Subject    : ${t.subject}
+Priority   : ${t.priority.toUpperCase()}
+Employee   : ${t.userName} (${t.userDept})
+Email      : ${t.userEmail}
+Location   : ${t.location||'Not specified'}
+${t.type==='request'?'Items      : '+t.accessories.join(', ')+'\nSpec       : '+(t.quantity||'N/A'):'Category   : '+t.category+'\nStarted    : '+(t.startedWhen||'N/A')}
+
+Description:
+${t.desc}
+
+Submitted: ${new Date(t.createdAt).toLocaleString()}
+ThinkDigitally IT Helpdesk Portal`);
+
+  document.getElementById('modal-email-body').innerHTML = `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+      <div class="section-label" style="margin-bottom:4px;">To</div>
+      <div style="color:var(--primary);font-weight:600;">${ADMIN_EMAIL}</div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+      <div class="section-label" style="margin-bottom:4px;">Subject</div>
+      <div style="font-weight:600;">[ThinkDigitally] ${t.id} — ${esc(t.subject)}</div>
+    </div>
+    <p style="font-size:12.5px;color:var(--text3);">Click <strong style="color:var(--primary)">Open Email Client</strong> to send this notification to the IT Admin's inbox.</p>`;
+  document.getElementById('email-send-btn').onclick = ()=>{ window.location.href=`mailto:${ADMIN_EMAIL}?subject=${subj}&body=${body}`; };
+  document.getElementById('modal-email').classList.add('open');
+}
+
+/* ════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════ */
+function renderDashboard() {
+  const all     = getTickets();
+  const tickets = currentUser.role==='admin' ? all : all.filter(t=>t.userId===currentUser.id);
+  const open    = tickets.filter(t=>t.status==='open').length;
+  const inprog  = tickets.filter(t=>t.status==='in-progress').length;
+  const resolved= tickets.filter(t=>t.status==='resolved').length;
+  const label   = currentUser.role==='admin' ? 'Total' : 'My';
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">🎫</div><div class="stat-label">${label} Tickets</div><div class="stat-value" style="color:var(--primary)">${tickets.length}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card"><div class="stat-icon">🔵</div><div class="stat-label">Open</div><div class="stat-value" style="color:var(--primary)">${open}</div><div class="stat-sub">Awaiting action</div></div>
+    <div class="stat-card"><div class="stat-icon">🟡</div><div class="stat-label">In Progress</div><div class="stat-value" style="color:var(--yellow)">${inprog}</div><div class="stat-sub">Being handled</div></div>
+    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Resolved</div><div class="stat-value" style="color:var(--green)">${resolved}</div><div class="stat-sub">Completed</div></div>`;
+
+  const recent = [...tickets].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
+  const tbody  = document.getElementById('recent-body');
+  if (!recent.length) {
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🎫</div><div class="empty-text">No tickets yet. Create your first one!</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = recent.map(t=>`
+    <tr onclick="openTicketModal('${t.id}')">
+      <td><span class="ticket-id">${t.id}</span></td>
+      <td class="td-main">${esc(t.subject)}</td>
+      <td>${typeBadge(t.type)}</td>
+      <td>${prioBadge(t.priority)}</td>
+      <td>${statBadge(t.status)}</td>
+      <td style="font-size:12px;color:var(--text3);white-space:nowrap">${fmtDate(t.createdAt)}</td>
+    </tr>`).join('');
+}
+
+/* ════════════════════════════════════
+   MY TICKETS
+════════════════════════════════════ */
+function renderMyTickets() {
+  const q  = (document.getElementById('my-q')?.value||'').toLowerCase();
+  const st = document.getElementById('my-fst')?.value||'';
+  const ty = document.getElementById('my-fty')?.value||'';
+  // ONLY show the current user's own tickets
+  let list = getTickets().filter(t=>t.userId===currentUser.id);
+  if (st) list=list.filter(t=>t.status===st);
+  if (ty) list=list.filter(t=>t.type===ty);
+  if (q)  list=list.filter(t=>t.subject.toLowerCase().includes(q)||t.id.toLowerCase().includes(q));
+  list.sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
+
+  const tbody = document.getElementById('my-tickets-body');
+  if (!list.length) {
+    tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No tickets found</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(t=>{
+    // Count admin replies
+    const adminReplies = t.comments.filter(c=>c.isAdmin).length;
+    const replyBadge = adminReplies>0 ? `<span style="font-size:11px;background:var(--green-lt);color:var(--green);padding:2px 7px;border-radius:5px;font-weight:600;margin-left:6px;">💬 ${adminReplies} reply</span>` : '';
+    return `
+    <tr>
+      <td><span class="ticket-id">${t.id}</span></td>
+      <td class="td-main">${esc(t.subject)}${replyBadge}</td>
+      <td>${typeBadge(t.type)}</td>
+      <td>${prioBadge(t.priority)}</td>
+      <td>${statBadge(t.status)}</td>
+      <td style="font-size:12px;color:var(--text3);white-space:nowrap">${fmtDate(t.updatedAt)}</td>
+      <td><button class="btn btn-secondary btn-xs" onclick="openTicketModal('${t.id}')">View</button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════
+   ALL TICKETS (ADMIN)
+════════════════════════════════════ */
+function renderAllTickets() {
+  if (currentUser.role!=='admin') return;
+  const q  = (document.getElementById('all-q')?.value||'').toLowerCase();
+  const st = document.getElementById('all-fst')?.value||'';
+  const ty = document.getElementById('all-fty')?.value||'';
+  const pr = document.getElementById('all-fpr')?.value||'';
+  let list = getTickets();
+  if (st) list=list.filter(t=>t.status===st);
+  if (ty) list=list.filter(t=>t.type===ty);
+  if (pr) list=list.filter(t=>t.priority===pr);
+  if (q)  list=list.filter(t=>t.subject.toLowerCase().includes(q)||t.id.toLowerCase().includes(q)||t.userName.toLowerCase().includes(q));
+  list.sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
+
+  const tbody = document.getElementById('all-tickets-body');
+  if (!list.length) {
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No tickets found</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(t=>`
+    <tr>
+      <td><span class="ticket-id">${t.id}</span></td>
+      <td class="td-main">${esc(t.subject)}</td>
+      <td style="font-size:12.5px;">${esc(t.userName)}<br><span style="font-size:11px;color:var(--text3);">${esc(t.userDept||'')}</span></td>
+      <td>${typeBadge(t.type)}</td>
+      <td>${prioBadge(t.priority)}</td>
+      <td>${statBadge(t.status)}</td>
+      <td style="font-size:12px;color:var(--text3);white-space:nowrap">${fmtDate(t.createdAt)}</td>
+      <td><button class="btn btn-secondary btn-xs" onclick="openTicketModal('${t.id}')">Manage</button></td>
+    </tr>`).join('');
+}
+
+/* ════════════════════════════════════
+   USERS (ADMIN)
+════════════════════════════════════ */
+function renderUsers() {
+  if (currentUser.role!=='admin') return;
+  const users   = getUsers();
+  const tickets = getTickets();
+  document.getElementById('user-count').textContent = users.length+' users';
+
+  const COLORS = ['#2563eb','#7c3aed','#16a34a','#ea580c','#ca8a04'];
+  document.getElementById('users-body').innerHTML = users.map((u,i)=>{
+    const color = COLORS[u.id.charCodeAt(0)%COLORS.length];
+    const cnt   = tickets.filter(t=>t.userId===u.id).length;
+    const isMe  = u.id===currentUser.id;
+    return `
+    <tr>
+      <td style="color:var(--text3);font-family:var(--mono);font-size:11px;">${i+1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:${color}20;color:${color};border:2px solid ${color}30;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${u.firstName[0]}${u.lastName[0]}</div>
+          <span class="td-main" style="font-size:13px;">${esc(u.firstName+' '+u.lastName)}${isMe?' <span style="font-size:10px;color:var(--text3);">(you)</span>':''}</span>
+        </div>
+      </td>
+      <td style="font-size:12.5px;color:var(--text2);">${esc(u.email)}</td>
+      <td style="font-size:12.5px;color:var(--text3);">${esc(u.department||'—')}</td>
+      <td>${u.role==='admin'?'<span class="badge badge-admin">⚡ Admin</span>':'<span class="badge badge-employee">👤 Employee</span>'}</td>
+      <td style="font-family:var(--mono);font-size:12px;color:var(--primary);font-weight:600;">${cnt}</td>
+      <td style="font-size:12px;color:var(--text3);">${fmtDate(u.joined)}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          ${!isMe ? `<button class="btn btn-xs ${u.role==='admin'?'btn-secondary':'btn-success'}" onclick="toggleRole('${u.id}')">${u.role==='admin'?'Make Employee':'Make Admin'}</button>` : ''}
+          ${!isMe ? `<button class="btn btn-xs btn-danger" onclick="deleteUser('${u.id}')">Remove</button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function toggleRole(userId) {
+  const u = getUsers().find(x => x.id === userId);
+  if (!u) return;
+  const newRole = u.role === 'admin' ? 'employee' : 'admin';
+  if (!confirm(`Change ${u.firstName}'s role to ${newRole}?`)) return;
+  try {
+    await db.collection('profiles').doc(userId).update({ role: newRole });
+    toast(`${u.firstName} is now ${newRole === 'admin' ? 'an Admin' : 'an Employee'}`, '✅');
+    renderUsers();
+  } catch (err) {
+    toast(authErrorMessage(err), '⚠️');
+  }
+}
+
+async function deleteUser(userId) {
+  const u = getUsers().find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(`Remove ${u.firstName} ${u.lastName} from the portal? Their tickets will remain.`)) return;
+  try {
+    await db.collection('profiles').doc(userId).update({ disabled: true });
+    toast('User removed from portal', '🗑');
+    renderUsers();
+  } catch (err) {
+    toast(authErrorMessage(err), '⚠️');
+  }
+}
+
+/* ════════════════════════════════════
+   SETTINGS (ADMIN)
+════════════════════════════════════ */
+function renderSettings() {
+  renderAccChips();
+  renderDeptChips();
+}
+
+function renderAccChips() {
+  const list = getAccList();
+  document.getElementById('acc-chips').innerHTML = list.map(a=>`
+    <div class="chip">
+      <span>${a.icon}</span><span>${esc(a.label)}</span>
+      <button class="chip-del" onclick="removeAcc('${a.id}')" title="Remove">×</button>
+    </div>`).join('');
+}
+
+function renderDeptChips() {
+  const list = getDeptList();
+  document.getElementById('dept-chips').innerHTML = list.map(d=>`
+    <div class="chip">
+      <span>${esc(d)}</span>
+      <button class="chip-del" onclick="removeDept('${esc(d)}')" title="Remove">×</button>
+    </div>`).join('');
+}
+
+function addAccessory() {
+  const icon  = document.getElementById('new-acc-icon').value.trim();
+  const label = document.getElementById('new-acc-label').value.trim();
+  if (!label) return toast('Enter accessory name','⚠️');
+  const list = getAccList();
+  const id = 'acc_'+Date.now();
+  list.push({id, icon:icon||'📦', label});
+  saveAccList(list);
+  document.getElementById('new-acc-icon').value='';
+  document.getElementById('new-acc-label').value='';
+  renderAccChips();
+  buildAccGrid();
+  toast('Accessory added','✅');
+}
+
+function removeAcc(id) {
+  saveAccList(getAccList().filter(a=>a.id!==id));
+  renderAccChips();
+  buildAccGrid();
+  toast('Accessory removed','🗑');
+}
+
+function addDept() {
+  const val = document.getElementById('new-dept').value.trim();
+  if (!val) return toast('Enter department name','⚠️');
+  const list = getDeptList();
+  if (list.find(d=>d.toLowerCase()===val.toLowerCase())) return toast('Already exists','⚠️');
+  list.push(val);
+  saveDepts(list);
+  document.getElementById('new-dept').value='';
+  renderDeptChips();
+  populateDeptSelect();
+  toast('Department added','✅');
+}
+
+function removeDept(name) {
+  saveDepts(getDeptList().filter(d=>d!==name));
+  renderDeptChips();
+  populateDeptSelect();
+  toast('Department removed','🗑');
+}
+
+/* ════════════════════════════════════
+   PROFILE
+════════════════════════════════════ */
+function renderProfile() {
+  const u = currentUser;
+  const COLORS = ['#2563eb','#7c3aed','#16a34a','#ea580c','#ca8a04'];
+  const color = COLORS[u.id.charCodeAt(0)%COLORS.length];
+  const av = document.getElementById('prof-av');
+  av.textContent = u.firstName[0]+u.lastName[0];
+  av.style.background = color+'20'; av.style.color = color;
+  av.style.border = '2px solid '+color+'30';
+  document.getElementById('prof-name').textContent = u.firstName+' '+u.lastName;
+  document.getElementById('prof-email').textContent = u.email;
+  document.getElementById('prof-role-badge').innerHTML = u.role==='admin'
+    ? '<span class="badge badge-admin">⚡ IT Admin</span>'
+    : '<span class="badge badge-employee">👤 Employee</span>';
+  document.getElementById('prof-dept').textContent = u.department||'—';
+  document.getElementById('prof-joined').textContent = new Date(u.joined).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const mine = getTickets().filter(t=>t.userId===u.id);
+  document.getElementById('prof-total').textContent = mine.length;
+  document.getElementById('prof-open').textContent  = mine.filter(t=>t.status==='open').length;
+}
+
+/* ════════════════════════════════════
+   TICKET MODAL
+════════════════════════════════════ */
+function openTicketModal(id) {
+  const t = getTickets().find(t=>t.id===id);
+  if (!t) return;
+  const isAdmin = currentUser.role==='admin';
+
+  let extra='';
+  if (t.type==='request'&&t.accessories.length>0) {
+    const names = t.accessories.map(s=>getAccList().find(a=>a.id===s)?.icon+' '+(getAccList().find(a=>a.id===s)?.label||s)||s).join(', ');
+    extra=`<div style="background:var(--purple-lt);border:1px solid var(--purple-mid);border-radius:var(--radius);padding:13px;margin-bottom:13px;">
+      <div class="section-label" style="margin-bottom:5px;">Requested Items</div>
+      <div style="font-weight:600;">${names}</div>
+      ${t.quantity?`<div style="font-size:12.5px;color:var(--text3);margin-top:3px;">Spec: ${esc(t.quantity)}</div>`:''}
+    </div>`;
+  }
+  if (t.type==='issue'&&t.category) {
+    extra=`<div style="background:var(--orange-lt);border:1px solid var(--orange-mid);border-radius:var(--radius);padding:13px;margin-bottom:13px;">
+      <div class="section-label" style="margin-bottom:5px;">Issue Category</div>
+      <div style="font-weight:600;">${esc(t.category)}</div>
+      ${t.startedWhen?`<div style="font-size:12.5px;color:var(--text3);margin-top:3px;">Started: ${esc(t.startedWhen)}</div>`:''}
+    </div>`;
+  }
+
+  // Comments – employees only see their own comments + admin replies
+  const COLORS=['#2563eb','#7c3aed','#16a34a','#ea580c','#ca8a04'];
+  let visComments = isAdmin ? t.comments : t.comments.filter(c=>c.userId===currentUser.id||c.isAdmin);
+
+  const commHtml = visComments.length>0
+    ? visComments.map(c=>{
+        const col = COLORS[c.userId?.charCodeAt(0)%COLORS.length||0];
+        const isAdminComment = c.isAdmin;
+        return `<div class="comment">
+          <div class="comment-av" style="background:${isAdminComment?'var(--primary)20':''+col+'20'};color:${isAdminComment?'var(--primary)':col};">${c.initials}</div>
+          <div class="comment-box${isAdminComment?' admin-reply':''}">
+            <div class="comment-meta">${esc(c.userName)} ${isAdminComment?'<span style="color:var(--primary);font-weight:700;">(IT Admin)</span>':''} · ${fmtDate(c.at)}</div>
+            <div class="comment-text">${esc(c.text)}</div>
+          </div>
+        </div>`;
+      }).join('')
+    : `<div style="color:var(--text3);font-size:13px;text-align:center;padding:14px 0;">No replies yet</div>`;
+
+  document.getElementById('modal-ticket-body').innerHTML = `
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">${typeBadge(t.type)} ${prioBadge(t.priority)} ${statBadge(t.status)}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--primary);background:var(--primary-lt);padding:3px 9px;border-radius:5px;display:inline-block;margin-bottom:7px;">${t.id}</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:8px;">${esc(t.subject)}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--text3);">
+        <span>👤 ${esc(t.userName)}</span>
+        <span>🏢 ${esc(t.userDept||'')}</span>
+        ${t.location?`<span>📍 ${esc(t.location)}</span>`:''}
+        <span>🕐 ${fmtDate(t.createdAt)}</span>
+      </div>
+    </div>
+    <hr />
+    ${extra}
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:13px;margin-bottom:18px;">
+      <div class="section-label" style="margin-bottom:5px;">Description</div>
+      <div style="font-size:13.5px;line-height:1.7;color:var(--text2);">${esc(t.desc)}</div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px;">
+      💬 ${isAdmin?'Comments & Replies':'Admin Replies'}
+    </div>
+    <div id="cm-list">${commHtml}</div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <textarea id="cm-input" class="form-input" rows="2" placeholder="${isAdmin?'Reply to this ticket…':'Add a comment…'}" style="resize:none;flex:1;"></textarea>
+      <button class="btn btn-secondary btn-sm" style="align-self:flex-end;" onclick="addComment('${id}')">Post</button>
+    </div>
+    ${isAdmin?`
+    <hr />
+    <div class="status-row">
+      <label>Update Status:</label>
+      <select class="filter-select" id="status-sel" style="flex:1;">
+        <option value="open" ${t.status==='open'?'selected':''}>🔵 Open</option>
+        <option value="in-progress" ${t.status==='in-progress'?'selected':''}>🟡 In Progress</option>
+        <option value="resolved" ${t.status==='resolved'?'selected':''}>🟢 Resolved</option>
+        <option value="closed" ${t.status==='closed'?'selected':''}>⚫ Closed</option>
+      </select>
+      <button class="btn btn-primary btn-sm" style="width:auto;" onclick="updateStatus('${id}')">Update</button>
+    </div>`:''}`;
+
+  document.getElementById('modal-ticket-footer').innerHTML = `
+    <button class="btn btn-secondary" onclick="closeModal('modal-ticket')">Close</button>
+    ${isAdmin?`<button class="btn btn-danger btn-sm" onclick="deleteTicket('${id}')">🗑 Delete</button>`:''}`;
+
+  document.getElementById('modal-ticket').classList.add('open');
+}
+
+async function addComment(ticketId) {
+  const text = document.getElementById('cm-input').value.trim();
+  if (!text) return toast('Write a comment first','⚠️');
+  const t = getTickets().find(x => x.id === ticketId);
+  if (!t) return;
+  const isAdmin = currentUser.role === 'admin';
+  const comments = [...(t.comments || [])];
+  comments.push({
+    userId: currentUser.id,
+    initials: currentUser.firstName[0] + currentUser.lastName[0],
+    userName: currentUser.firstName + ' ' + currentUser.lastName,
+    isAdmin,
+    text,
+    at: new Date().toISOString(),
+  });
+  try {
+    await db.collection('tickets').doc(ticketId).update({
+      comments,
+      updatedAt: new Date().toISOString(),
+    });
+    toast('Comment posted', '💬');
+    openTicketModal(ticketId);
+  } catch (err) {
+    toast(authErrorMessage(err), '⚠️');
+  }
+}
+
+async function updateStatus(ticketId) {
+  const newStatus = document.getElementById('status-sel').value;
+  const t = getTickets().find(x => x.id === ticketId);
+  if (!t) return;
+  const comments = [...(t.comments || [])];
+  comments.push({
+    userId: 'admin', initials: 'IT',
+    userName: 'IT Admin', isAdmin: true,
+    text: `Status updated → ${newStatus.toUpperCase()}`,
+    at: new Date().toISOString(),
+  });
+  try {
+    await db.collection('tickets').doc(ticketId).update({
+      status: newStatus,
+      updatedAt: new Date().toISOString(),
+      comments,
+    });
+    updateBadges();
+    toast('Status updated to ' + newStatus, '✅');
+    closeModal('modal-ticket');
+    renderAllTickets();
+  } catch (err) {
+    toast(authErrorMessage(err), '⚠️');
+  }
+}
+
+async function deleteTicket(ticketId) {
+  if (!confirm('Delete this ticket permanently?')) return;
+  try {
+    await db.collection('tickets').doc(ticketId).delete();
+    updateBadges();
+    closeModal('modal-ticket');
+    renderAllTickets();
+    toast('Ticket deleted', '🗑');
+  } catch (err) {
+    toast(authErrorMessage(err), '⚠️');
+  }
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ════════════════════════════════════
+   BADGES & HELPERS
+════════════════════════════════════ */
+function updateBadges() {
+  const tickets = getTickets();
+  const myOpen  = tickets.filter(t=>t.userId===currentUser.id&&t.status==='open').length;
+  const allOpen = tickets.filter(t=>t.status==='open').length;
+  const bMy  = document.getElementById('badge-my-open');
+  const bAll = document.getElementById('badge-all-open');
+  const dot  = document.getElementById('notif-dot');
+  if (bMy)  { bMy.textContent=myOpen;  bMy.classList.toggle('show',myOpen>0); }
+  if (bAll) { bAll.textContent=allOpen; bAll.classList.toggle('show',allOpen>0); }
+  if (dot)  { dot.textContent=myOpen;  dot.classList.toggle('show',myOpen>0); }
+}
+
+function statBadge(s) {
+  const m = { open:['badge-open','Open'], 'in-progress':['badge-inprog','In Progress'], resolved:['badge-resolved','Resolved'], closed:['badge-closed','Closed'] };
+  const [cls,lbl] = m[s]||['badge-closed',s];
+  return `<span class="badge ${cls}"><span class="bd"></span>${lbl}</span>`;
+}
+function prioBadge(p) {
+  const m = { low:'badge-plow', medium:'badge-pmedium', high:'badge-phigh', critical:'badge-pcritical' };
+  const icons = { low:'🟢 Low', medium:'🟡 Medium', high:'🟠 High', critical:'🔴 Critical' };
+  return `<span class="badge ${m[p]||''}">${icons[p]||p}</span>`;
+}
+function typeBadge(t) {
+  return t==='request'
+    ? `<span class="badge badge-request">🛒 Request</span>`
+    : `<span class="badge badge-issue">🔧 Issue</span>`;
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d=new Date(iso), now=new Date(), diff=(now-d)/1000;
+  if (diff<60)    return 'Just now';
+  if (diff<3600)  return Math.floor(diff/60)+'m ago';
+  if (diff<86400) return Math.floor(diff/3600)+'h ago';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showErr(id,msg) { const e=document.getElementById(id); if(e){e.textContent=msg;e.classList.add('show');} }
+function clearErrs() { document.querySelectorAll('.form-error').forEach(e=>{e.textContent='';e.classList.remove('show');}); }
+function toast(msg,icon='ℹ️') {
+  const t=document.createElement('div');
+  t.className='toast';
+  t.innerHTML=`<span>${icon}</span><span>${msg}</span>`;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.classList.add('fadeout');setTimeout(()=>t.remove(),280);},3000);
+}
+
+/* Close modals on overlay click */
+document.querySelectorAll('.modal-overlay').forEach(ov=>{
+  ov.addEventListener('click', e=>{ if(e.target===ov) ov.classList.remove('open'); });
+});
+
+/* Bootstrap Firebase + dept dropdown */
+initFirebase().catch(err => {
+  console.error(err);
+  showAppLoadingError('Could not connect to Firebase. Check firebase-config.js and Firestore rules.');
+});
+</script>
+</body>
+</html>
